@@ -4,11 +4,11 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function ProfileScreen() {
@@ -104,14 +104,6 @@ uma consulta médica.`);
         >
           <MaterialCommunityIcons name="account-edit" size={24} color="#1FB9C9" />
           <Text style={styles.cardText}>Editar dados pessoais</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => openModal("gerenciar-metas")}
-        >
-          <MaterialCommunityIcons name="check-circle" size={24} color="#1FB9C9" />
-          <Text style={styles.cardText}>Gerenciar metas</Text>
         </TouchableOpacity>
 
 <TouchableOpacity style={styles.card} onPress={() => router.push("/privacy")}>

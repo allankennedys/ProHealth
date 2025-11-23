@@ -212,9 +212,9 @@ loadData();
             {/* Card de progresso */}
             <View style={styles.progressCard}>
               <View style={styles.progressRow}>
-                <View style={styles.circle}></View>
+                  <MaterialCommunityIcons name="notebook-heart" size={32} color="#1EBCCF" />
                 <Text style={styles.progressText}>
-                  Você já atingiu 70% de suas metas diárias.
+                  Resumo dos seus dados de hoje:
                 </Text>
               </View>
 
@@ -251,10 +251,10 @@ loadData();
             </View>
 
             {/* Passos */}
-            <View style={[styles.largeCard, { backgroundColor: "#FFE7E7" }]}>
+            <View style={[styles.largeCard, { backgroundColor: "#f0ffe7ff" }]}>
               <View style={styles.rowBetween}>
                 <View style={styles.row}>
-                  <MaterialCommunityIcons name="shoe-print" size={30} color="#FF4D4D" />
+                  <MaterialCommunityIcons name="shoe-print" size={30} color="green" />
                   <Text style={styles.cardTitle}>Passos</Text>
                 </View>
                 <Text style={styles.cardValue}>
@@ -268,7 +268,7 @@ loadData();
             <View style={[styles.largeCard, { backgroundColor: "#E7F7FF" }]}>
               <View style={styles.rowBetween}>
                 <View style={styles.row}>
-                  <MaterialCommunityIcons name="heart-flash" size={30} color="#FF4D4D" />
+                  <MaterialCommunityIcons name="heart-pulse" size={30} color="#FF4D4D" />
                   <Text style={styles.cardTitle}>Pressão</Text>
                 </View>
                 <Text style={styles.cardValue}>
@@ -337,6 +337,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 20,
+    gap:15,
+    left: 15
   },
   circle: {
     width: 55,

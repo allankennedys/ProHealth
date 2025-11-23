@@ -47,7 +47,7 @@ export default function DataInputScreen() {
           style={[styles.card, { backgroundColor: "#FFF0F0" }]}
           onPress={() => openModal("pressao")}
         >
-          <MaterialCommunityIcons name="heart-flash" size={32} color="#FF4D4D" />
+          <MaterialCommunityIcons name="heart-pulse" size={32} color="#FF4D4D" />
           <Text style={styles.cardTitle}>Pressão</Text>
           <MaterialCommunityIcons
             name="pencil"
@@ -61,7 +61,7 @@ export default function DataInputScreen() {
           style={[styles.card, { backgroundColor: "#E7F7FF" }]}
           onPress={() => openModal("glicemia")}
         >
-          <MaterialCommunityIcons name="water" size={32} color="#1FB9C9" />
+          <MaterialCommunityIcons name="water" size={32} color="red" />
           <Text style={styles.cardTitle}>Glicemia</Text>
           <MaterialCommunityIcons
             name="pencil"
@@ -72,11 +72,11 @@ export default function DataInputScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#FFF0F0" }]}
+          style={[styles.card, { backgroundColor: "#f0ffe7ff" }]}
           onPress={() => openModal("batimentos")}
         >
-          <MaterialCommunityIcons name="heart-pulse" size={32} color="#FF4D4D" />
-          <Text style={styles.cardTitle}>Batimentos</Text>
+          <MaterialCommunityIcons name="shoe-print" size={32} color="green" />
+          <Text style={styles.cardTitle}>Passos</Text>
           <MaterialCommunityIcons
             name="pencil"
             size={20}

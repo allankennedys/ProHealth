@@ -10,7 +10,7 @@ export default function RootLayout() {
         options={{ headerShown: false }} 
       />
 
-      {/* Grupo de autenticação — SEM header */}
+      {/* Grupo de autenticação */}
       <Stack.Screen 
         name="(auth)" 
         options={{ headerShown: false }} 
@@ -27,10 +27,24 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: "white" },
         }}
       />
-      // app/_layout.tsx
-<Stack.Screen name="privacy" options={{ headerShown: false, presentation: "modal" }} />
-<Stack.Screen name="edit-profile" options={{ headerShown: false, presentation: "modal" }} />
 
+      {/* Modal de Privacidade */}
+      <Stack.Screen
+        name="privacy"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
+
+      {/* Modal de edição de perfil */}
+      <Stack.Screen
+        name="edit-profile"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }

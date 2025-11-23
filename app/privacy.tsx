@@ -4,12 +4,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-    Alert,
-    StyleSheet,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 export default function PrivacyModal() {
@@ -97,9 +97,9 @@ export default function PrivacyModal() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Como o Pulse usa meus dados?</Text>
+        <Text style={styles.title}>Como o ProHealth usa meus dados?</Text>
         <Text style={styles.description}>
-          O Pulse usa os dados que você insere para que a inteligência artificial
+          O ProHealth usa os dados que você insere para que a inteligência artificial
           identifique padrões e ofereça insights personalizados sobre sua saúde,
           sempre como apoio e nunca em substituição a uma consulta médica.
         </Text>
