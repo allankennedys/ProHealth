@@ -97,8 +97,18 @@ export default function DataInputScreen() {
             color="#888"
             style={styles.editIcon}
           />
+        
         </TouchableOpacity>
+              <TouchableOpacity style={styles.cardText} onPress={() => router.push("/Lembretes")}>
+        <MaterialCommunityIcons name="pill" size={24} color="#1FB9C9" />
+        <Text style={{fontSize: 16}}>Cadastrar Medicamento</Text>
+      </TouchableOpacity>
+                   <TouchableOpacity style={styles.cardText} onPress={() => router.push("/GerenciarMedicamentos")}>
+        <MaterialCommunityIcons name="alarm" size={24} color="#1FB9C9" />
+        <Text style={{fontSize: 16}}>Gerenciar Lembretes</Text>
+      </TouchableOpacity>
       </View>
+
     </View>
   );
 }
@@ -143,4 +153,16 @@ const styles = StyleSheet.create({
     top: 8,
     right: 8,
   },
+  cardText: {
+    fontSize: 16,
+    color: "#333",
+    flex: 1,
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 20,
+    marginHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#c0c0c021",
+    padding: 20
+  }
 });

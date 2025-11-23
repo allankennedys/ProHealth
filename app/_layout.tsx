@@ -1,4 +1,3 @@
-// app/_layout.tsx
 import { Stack } from "expo-router";
 
 export default function RootLayout() {
@@ -40,6 +39,20 @@ export default function RootLayout() {
       {/* Modal de edição de perfil */}
       <Stack.Screen
         name="edit-profile"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
+            <Stack.Screen
+        name="Lembretes"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
+            <Stack.Screen
+        name="GerenciarMedicamentos"
         options={{
           headerShown: false,
           presentation: "modal",

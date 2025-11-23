@@ -1,7 +1,9 @@
 // app/(tabs)/index.tsx
 import { supabase } from "@/supabase";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Device from 'expo-device';
 import { LinearGradient } from "expo-linear-gradient";
+import * as Notifications from 'expo-notifications';
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,7 +13,6 @@ import {
   Text,
   View,
 } from "react-native";
-
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
@@ -42,6 +43,8 @@ if (userError || !user) {
   setLoading(false);
   return;
 }
+  saveExpoPushToken(user.id); // ← Executa em background, sem await
+
 const { data: userData, error: userErrorData } = await supabase
   .from("profiles")
   .select("full_name")
@@ -158,7 +161,47 @@ const onRefresh = async () => {
   await loadData();
   setRefreshing(false);
 };
+const saveExpoPushToken = async (userId: string) => {
+  // Só em dispositivos físicos
+  if (!Device.isDevice) {
+    console.log("Notificações não suportadas em emulador/web");
+    return;
+  }
 
+  try {
+    // Solicita permissão (necessário no iOS)
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      console.log("Permissão de notificação negada");
+      return;
+    }
+
+    // Obtém o token do Expo
+    const projectId = "fdfa5aff-7594-4495-ba54-0390fb1a0d20"; // ← Substitua pelo seu!
+    const tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId, // obrigatório para builds standalone
+    });
+
+    // Salva no Supabase
+    const { error } = await supabase
+      .from('profiles')
+      .update({ expo_push_token: tokenData.data })
+      .eq('id', userId);
+
+    if (error) {
+      console.error('Erro ao salvar token no Supabase:', error);
+    } else {
+      console.log('Token salvo com sucesso');
+    }
+  } catch (error) {
+    console.error('Erro ao obter/salvar token:', error);
+  }
+};
 useEffect(() => {
 
 
