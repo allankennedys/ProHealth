@@ -1,4 +1,3 @@
-// app/(tabs)/profile.tsx
 import { supabase } from "@/supabase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -75,8 +74,6 @@ export default function ProfileScreen() {
   };
 
   const openModal = (modal: string) => {
-    // Você pode usar um modal genérico ou navegar para uma tela específica
-    // Por enquanto, vamos apenas alertar
     Alert.alert(`${modal}`, `O ProHealth usa os dados que você
 insere para que a inteligência
 artificial identifique padrões e
@@ -84,8 +81,6 @@ ofereça insights personalizados
 sobre sua saúde, sempre como
 apoio e nunca em substituição a
 uma consulta médica.`);
-    // Se quiser navegar:
-    // router.push(`/profile-modal?modal=${modal}`);
   };
 
   return (

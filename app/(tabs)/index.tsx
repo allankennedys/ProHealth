@@ -1,9 +1,9 @@
-// app/(tabs)/index.tsx
 import { supabase } from "@/supabase";
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Device from 'expo-device';
 import { LinearGradient } from "expo-linear-gradient";
 import * as Notifications from 'expo-notifications';
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,12 +11,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
-
+  const router = useRouter(); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState({
@@ -25,6 +26,8 @@ export default function HomeScreen() {
     glucose: 0,
     steps: 0,
     sleep: "00h 00min",
+      activityMinutes: 0,
+  caloriesBurned: 0,
     userName: ""
   });
 const loadData = async () => {
@@ -32,9 +35,8 @@ setLoading(true);
 setError(null);
 
 
-const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+const today = new Date().toISOString().split("T")[0]; 
 
-// ✅ Obter usuário autenticado
 const { data: authData, error: userError } = await supabase.auth.getUser();
 const user = authData?.user;
 
@@ -43,7 +45,6 @@ if (userError || !user) {
   setLoading(false);
   return;
 }
-  saveExpoPushToken(user.id); // ← Executa em background, sem await
 
 const { data: userData, error: userErrorData } = await supabase
   .from("profiles")
@@ -138,13 +139,33 @@ try {
   const sleepFormatted = `${String(hours).padStart(2, "0")}h ${String(
     minutes
   ).padStart(2, "0")}min`;
+// Atividade física
+const { data: activityResult, error: activityError } = await supabase
+  .from("activity_logs")
+  .select("duration_minutes, calories_burned")
+  .eq("user_id", user.id)
+  .gte("start_time", today)
+  .lte("start_time", `${today}T23:59:59.999Z`);
 
+if (activityError) throw activityError;
+
+const totalActivityMinutes = (activityResult || []).reduce(
+  (sum: number, item: any) => sum + (item.duration_minutes || 0),
+  0
+);
+
+const totalCalories = (activityResult || []).reduce(
+  (sum: number, item: any) => sum + (item.calories_burned || 0),
+  0
+);
   setData({
     water: waterLiters,
     bloodPressure: bp,
     glucose: avgGlucose,
     steps: totalSteps,
     sleep: sleepFormatted,
+      activityMinutes: totalActivityMinutes,
+  caloriesBurned: parseFloat(totalCalories.toFixed(1)),
     userName: `, ${userName}`,
   });
 } catch (err: any) {
@@ -181,13 +202,11 @@ const saveExpoPushToken = async (userId: string) => {
       return;
     }
 
-    // Obtém o token do Expo
-    const projectId = "fdfa5aff-7594-4495-ba54-0390fb1a0d20"; // ← Substitua pelo seu!
+    const projectId = "fdfa5aff-7594-4495-ba54-0390fb1a0d20"; 
     const tokenData = await Notifications.getExpoPushTokenAsync({
-      projectId, // obrigatório para builds standalone
+      projectId, // 
     });
 
-    // Salva no Supabase
     const { error } = await supabase
       .from('profiles')
       .update({ expo_push_token: tokenData.data })
@@ -202,11 +221,31 @@ const saveExpoPushToken = async (userId: string) => {
     console.error('Erro ao obter/salvar token:', error);
   }
 };
+const formatMinutesToHours = (totalMinutes: number): string => {
+  if (totalMinutes === 0) return "0min";
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0) {
+    return `${hours}h ${minutes > 0 ? `${minutes}min` : ""}`.trim();
+  }
+  return `${minutes}min`;
+};
 useEffect(() => {
+  const init = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (user) {
+      await saveExpoPushToken(user.id);
+      await loadData();
+    } else {
+      setError("Usuário não autenticado");
+      setLoading(false);
+    }
+  };
 
-
-loadData();
+  init();
 }, []);
+
 
 
   // Formata a data atual
@@ -234,7 +273,9 @@ loadData();
               <Text style={styles.greeting}>Olá{data.userName}!</Text>
               <Text style={styles.date}>{formatDate()}</Text>
             </View>
-            <MaterialCommunityIcons name="bell-outline" size={28} color="white" />
+            <TouchableOpacity onPress={() => router.push("/notificacoes")} >
+            <MaterialCommunityIcons name="bell-outline" size={28} color="white"/>
+            </TouchableOpacity>
           </View>
         </LinearGradient>
 
@@ -279,7 +320,20 @@ loadData();
                 </View>
               </View>
             </View>
-
+{/* Atividade Física */}
+<View style={[styles.largeCard, { backgroundColor: "#FFF8E7" }]}>
+  <View style={styles.rowBetween}>
+    <View style={styles.row}>
+      <MaterialCommunityIcons name="run" size={30} color="#FFA000" />
+      <Text style={styles.cardTitle}>Atividade Física</Text>
+    </View>
+    <View>
+<Text style={{fontSize:20, fontWeight: "bold"}}>
+  {formatMinutesToHours(data.activityMinutes)}
+</Text>
+    </View>
+  </View>
+</View>
             {/* Água */}
             <View style={[styles.largeCard, { backgroundColor: "#E7F7FF" }]}>
               <View style={styles.rowBetween}>

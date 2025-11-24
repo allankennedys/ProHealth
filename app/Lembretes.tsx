@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 export default function CadastroMedicamentoModal() {
 const router = useRouter();
@@ -21,6 +22,7 @@ const [nome, setNome] = useState("");
 const [dosagem, setDosagem] = useState("");
 const [horario, setHorario] = useState("");
 const [submitting, setSubmitting] = useState(false);
+const [isTimePickerVisible, setTimePickerVisible] = useState(false);
 
 useEffect(() => {
 const loadUser = async () => {
@@ -36,6 +38,16 @@ setLoading(false);
 loadUser();
 }, []);
 
+const showTimePicker = () => setTimePickerVisible(true);
+const hideTimePicker = () => setTimePickerVisible(false);
+
+const handleConfirmTime = (date: Date) => {
+const hours = String(date.getHours()).padStart(2, "0");
+const minutes = String(date.getMinutes()).padStart(2, "0");
+setHorario(`${hours}:${minutes}`);
+hideTimePicker();
+};
+
 const handleCadastrar = async () => {
 if (!nome || !horario) {
 Alert.alert("Preencha nome e horário.");
@@ -47,32 +59,29 @@ if (!userId) return;
 setSubmitting(true);
 
 try {
-  // 1️⃣ Inserir medicamento
-// Inserir medicamento
-await supabase.from("medicamentos").insert([{ nome, dosagem, usuario: userId }]);
+  // Cadastrar medicamento
+  await supabase.from("medicamentos").insert([{ nome, dosagem, usuario: userId }]);
 
-// Pegar o id do último medicamento do usuário
-const { data: medData, error: medError } = await supabase
-  .from("medicamentos")
-  .select("id")
-  .eq("usuario", userId)
-  .order("created_at", { ascending: false })
-  .limit(1)
-  .single(); // retorna 1 único registro
+  // Buscar último medicamento inserido
+  const { data: medData, error: medError } = await supabase
+    .from("medicamentos")
+    .select("id")
+    .eq("usuario", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single(); 
 
-if (medError) throw medError;
+  if (medError) throw medError;
+  const medicamentoId = medData.id;
 
-const medicamentoId = medData.id;
-
-// Inserir lembrete
-await supabase.from("lembretes").insert([{ medicamento_id: medicamentoId, horario }]);
-
+  // Cadastrar lembrete
+  await supabase.from("lembretes").insert([{ medicamento_id: medicamentoId, horario }]);
 
   Alert.alert("Sucesso", "Medicamento e lembrete cadastrados!");
   setNome("");
   setDosagem("");
   setHorario("");
-  router.back(); // fecha o modal
+  router.back(); 
 } catch (err: any) {
   console.error(err);
   Alert.alert("Erro", err.message || "Não foi possível cadastrar.");
@@ -88,8 +97,7 @@ return ( <View style={styles.container}><ActivityIndicator size="large" color="#
 );
 }
 
-return ( <View style={styles.container}>
-<View style={styles.header}>
+return ( <View style={styles.container}><View style={styles.header}>
 <TouchableOpacity onPress={() => router.back()} style={styles.closeButton}><MaterialCommunityIcons name="close" size={28} color="#555" /></TouchableOpacity><Text style={styles.headerTitle}>Cadastrar Medicamento</Text>
 <View style={{ width: 28 }} /></View>
 
@@ -111,12 +119,16 @@ return ( <View style={styles.container}>
       style={styles.input}
     />
 
-    <Text style={styles.label}>Horário (HH:MM):</Text>
-    <TextInput
-      value={horario}
-      onChangeText={setHorario}
-      placeholder="Ex: 08:30"
-      style={styles.input}
+    <Text style={styles.label}>Horário:</Text>
+    <TouchableOpacity onPress={showTimePicker} style={styles.input}>
+      <Text>{horario || "Escolha o horário"}</Text>
+    </TouchableOpacity>
+
+    <DateTimePickerModal
+      isVisible={isTimePickerVisible}
+      mode="time"
+      onConfirm={handleConfirmTime}
+      onCancel={hideTimePicker}
     />
 
     <Button
@@ -127,6 +139,7 @@ return ( <View style={styles.container}>
     />
   </View>
 </View>
+
 
 );
 }
@@ -154,5 +167,6 @@ borderRadius: 12,
 padding: 12,
 marginBottom: 12,
 fontSize: 15,
+justifyContent: "center",
 },
 });

@@ -41,7 +41,6 @@ const [tempDate, setTempDate] = useState(new Date());
     setLoading(true)
     setErrorMsg("")
 
-    // validação básica já que a data agora vem 100% formatada
     if (birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setErrorMsg("Data inválida")
       setLoading(false)
@@ -131,8 +130,7 @@ const [tempDate, setTempDate] = useState(new Date());
       <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
 
       {/* -------- Data -------- */}
-{/* -------- Data de nascimento -------- */}
-{/* -------- Data de nascimento -------- */}
+
 <Text style={styles.label}>Data de nascimento</Text>
 
 <TouchableOpacity
@@ -199,12 +197,11 @@ const [tempDate, setTempDate] = useState(new Date());
         display="spinner"
         value={tempDate}
         onChange={(event, date) => {
-          // iOS SEMPRE chama onChange duas vezes, por isso só pego se houver date
           if (date) {
             setTempDate(date)
           }
         }}
-        themeVariant="light" // evita picker branco no modo dark
+        themeVariant="light" 
       />
 
       <TouchableOpacity
@@ -275,7 +272,7 @@ const [tempDate, setTempDate] = useState(new Date());
 
       {/* -------- Nível de atividade (chips) -------- */}
       <Text style={styles.label}>Nível de atividade</Text>
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
+      <View style={{ flexDirection: "row", gap: 10, marginBottom: 12}}>
         {[
           { label: "Sedentário", value: "Sedentário" },
           { label: "Leve", value: "Leve" },
@@ -288,7 +285,7 @@ const [tempDate, setTempDate] = useState(new Date());
             onPress={() => setActivityLevel(value)}
             style={{
               paddingVertical: 10,
-              paddingHorizontal: 14,
+              paddingHorizontal: 8,
               borderRadius: 6,
               backgroundColor: activityLevel === value ? "#1FB9C9" : "#E9E9E9",
             }}
@@ -331,7 +328,7 @@ const styles = StyleSheet.create({
   logo: { width: 90, height: 90, alignSelf: "center", marginBottom: 40, marginTop: -60 },
   label: { color: "#555", marginBottom: 6, fontSize: 15 },
   input: { backgroundColor: "#E9E9E9", padding: 14, borderRadius: 6, fontSize: 16, marginBottom: 12 },
-  button: { backgroundColor: "#1FB9C9", padding: 16, borderRadius: 30, marginTop: 20, alignItems: "center" },
+  button: { backgroundColor: "#1FB9C9", padding: 16, borderRadius: 30, marginTop: 20, alignItems: "center",marginBottom:100 },
   buttonText: { color: "white", fontSize: 18 },
   switchRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginVertical: 10 },
 })

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "917156614518",
+    "project_id": "prohealth-e21ca",
+    "storage_bucket": "prohealth-e21ca.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:917156614518:android:722daa44d8b8e70720ea57",
+        "android_client_info": {
+          "package_name": "com.allankennedys.ProHealth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9IIyo9E4NdznjltukDgzwDV6ZAo0iIsU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

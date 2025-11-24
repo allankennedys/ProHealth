@@ -58,6 +58,13 @@ export default function RootLayout() {
           presentation: "modal",
         }}
       />
+            <Stack.Screen
+        name="notificacoes"
+        options={{
+          headerShown: false,
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }
