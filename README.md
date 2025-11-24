@@ -1,50 +1,96 @@
-# Welcome to your Expo app 👋
+# ProHealth
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+ProHealth é um aplicativo de gerenciamento de saúde pessoal que ajuda o usuário a registrar e monitorar dados de saúde, cadastrar medicamentos, definir lembretes e receber notificações para não esquecer de tomá-los.
 
-## Get started
+---
 
-1. Install dependencies
+## Tecnologias
 
-   ```bash
-   npm install
-   ```
+* **Frontend:** React Native + Expo
+* **Backend:** Supabase (PostgreSQL, Auth, Edge Functions)
+* **Notificações:** Expo Push Notifications
+* **Hospedagem do Backend:** Supabase Edge Functions
+* **Relatórios** Gerados por AI Agent via n8n
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Funcionalidades
 
-In the output, you'll find options to open the app in a
+* Cadastro de medicamentos com nome, dosagem e horário.
+* Lembretes automáticos baseados em horário.
+* Notificações push em Android e iOS.
+* Histórico de notificações enviadas.
+* Relatórios diários gerados por IA a partir dos dados inseridos pelo usuário.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Pré-requisitos
 
-## Get a fresh project
+* Node.js >= 20
+* Expo CLI
+* Conta no Supabase
+* Conta no Firebase (para push notifications Android)
 
-When you're ready, run:
+---
+
+## Configuração do Projeto
+
+1. Clone o repositório:
 
 ```bash
-npm run reset-project
+git clone git@github.com:allankennedys/ProHealth.git
+cd prohealth
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Instale dependências:
 
-## Learn more
+```bash
+npm install
+# ou
+yarn install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Crie um arquivo `.env` na raiz com as variáveis do Supabase:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+SUPABASE_URL=<sua_url_supabase>
+SUPABASE_ANON_KEY=<sua_anon_key>
+SUPABASE_SERVICE_ROLE_KEY=<sua_service_role_key>
+```
 
-## Join the community
+## Rodando localmente
 
-Join our community of developers creating universal apps.
+```bash
+expo start
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+* Para testes Android/iOS com push notifications, use o Expo Go.
+
+---
+
+## Build para produção
+
+```bash
+eas build -p android --profile production
+eas build -p ios --profile production
+```
+
+
+## Estrutura do Banco de Dados
+
+* **profiles**: informações do usuário + `expo_push_token`.
+* **medicamentos**: lista de medicamentos por usuário.
+* **lembretes**: horários dos medicamentos.
+* **notificacoes_enviadas**: histórico de notificações enviadas.
+
+---
+
+## Observações
+
+* Notificações são enviadas via Supabase Edge Function que consulta os lembretes no horário exato.
+
+---
+
+## Contato
+
+Desenvolvedores: Allan Kennedy, Felipe Santos, Lucas Câmera, Kiria Velsoso
