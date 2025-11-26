@@ -2,12 +2,12 @@ import { supabase } from "@/supabase"; // ajuste se seu path for diferente
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-    Image,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 export default function Login() {
@@ -40,7 +40,7 @@ export default function Login() {
       
       {/* LOGO */}
       <Image
-        source={require("../../assets/images/logo.png")} 
+        source={require("../../assets/images/logol.png")} 
         style={styles.logo}
         resizeMode="contain"
       />
