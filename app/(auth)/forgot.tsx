@@ -1,8 +1,8 @@
 import { supabase } from "@/supabase";
+import { notify } from "@/lib/ui";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -17,7 +17,7 @@ export default function ForgotPassword() {
 
   const handleSendResetEmail = async () => {
     if (!email.trim()) {
-      Alert.alert("Erro", "Por favor, insira seu e-mail.");
+      notify("Erro", "Por favor, insira seu e-mail.");
       return;
     }
 
@@ -30,7 +30,7 @@ export default function ForgotPassword() {
 
     if (error) {
       console.error("Erro ao enviar e-mail:", error);
-      Alert.alert("Erro", "Não foi possível enviar o e-mail. Verifique o endereço e tente novamente.");
+      notify("Erro", "Não foi possível enviar o e-mail. Verifique o endereço e tente novamente.");
     } else {
       setSent(true);
     }

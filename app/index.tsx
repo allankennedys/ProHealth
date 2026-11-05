@@ -1,59 +1,17 @@
-// app/index.tsx
-import { supabase } from '@/supabase';
-import { useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { useSession } from "@/lib/session";
+import { Redirect } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 
-export default function IndexRedirect() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(true);
+export default function Index() {
+  const { session, profile, loading } = useSession();
 
-  useEffect(() => {
-    let hasRedirected = false;
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Evita redirecionamentos duplicados
-        if (hasRedirected) return;
-
-        // Garante que a sessão foi carregada
-        if (session === undefined) return; // ainda carregando
-
-        setIsLoading(false);
-        hasRedirected = true;
-
-        if (!session) {
-          router.replace('/(auth)/login');
-        } else {
-          router.replace('/(tabs)'); // 👈 redireciona para o layout protegido
-        }
-      }
-    );
-
-    // Cleanup seguro
-    return () => {
-      if (authListener?.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
-  }, [router]);
-
-  if (isLoading) {
+  if (loading || (session && !profile)) {
     return (
-      <View style={styles.container}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "white" }}>
         <ActivityIndicator size="large" color="#1FB9C9" />
       </View>
     );
   }
-
-  return null;
+  if (!session) return <Redirect href="/(auth)/login" />;
+  return <Redirect href={profile?.role === "familiar" ? "/(familiar)" : "/(idoso)"} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
-  },
-});

@@ -1,334 +1,171 @@
-import { supabase } from "@/supabase"
-import DateTimePicker from "@react-native-community/datetimepicker"
-import { router } from "expo-router"
-import { useState } from "react"
-import {
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View
-} from "react-native"
+import TermosdeUso from "@/components/TermosdeUso";
+import { isValidPin, pinToPassword, type Role } from "@/lib/health";
+import { s } from "@/lib/styles";
+import { notify } from "@/lib/ui";
+import { supabase } from "@/supabase";
+import { router } from "expo-router";
+import { useState } from "react";
+import { Pressable, ScrollView, Switch, Text, TextInput, View } from "react-native";
+
+const maskDate = (t: string) => {
+  const d = t.replace(/\D/g, "").slice(0, 8);
+  if (d.length > 4) return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
+  if (d.length > 2) return `${d.slice(0, 2)}/${d.slice(2)}`;
+  return d;
+};
+const toIso = (br: string) => {
+  const m = br.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const iso = `${m[3]}-${m[2]}-${m[1]}`;
+  const d = new Date(iso);
+  return isNaN(d.getTime()) || d > new Date() ? null : iso;
+};
 
 export default function Register() {
+  const [role, setRole] = useState<Role>("idoso");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [secret, setSecret] = useState(""); // PIN (idoso) ou senha (familiar)
+  const [secret2, setSecret2] = useState("");
+  const [birth, setBirth] = useState("");
+  const [phone, setPhone] = useState("");
+  const [emName, setEmName] = useState("");
+  const [emPhone, setEmPhone] = useState("");
+  const [emEmail, setEmEmail] = useState("");
+  const [accepted, setAccepted] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
-
-  
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [birthDate, setBirthDate] = useState("") // YYYY-MM-DD
-const [showDatePicker, setShowDatePicker] = useState(false);
-const [tempDate, setTempDate] = useState(new Date());
-
-  const [sex, setSex] = useState("")
-  const [height, setHeight] = useState("")
-  const [weight, setWeight] = useState("")
-  const [activityLevel, setActivityLevel] = useState("")
-
-  const [aceitouIA, setAceitouIA] = useState(true)
-  const [aceitouTermos, setAceitouTermos] = useState(true)
-  const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState("")
-
-  const isValidNumber = (value: string) => !value || !isNaN(Number(value))
+  const isIdoso = role === "idoso";
 
   async function handleRegister() {
-    setLoading(true)
-    setErrorMsg("")
+    setErrorMsg("");
+    if (!fullName.trim()) return setErrorMsg("Informe o nome completo.");
+    if (!email.trim()) return setErrorMsg("Informe o e-mail.");
+    if (isIdoso) {
+      if (!isValidPin(secret)) return setErrorMsg("O PIN deve ter exatamente 4 números.");
+    } else if (secret.length < 6) {
+      return setErrorMsg("A senha deve ter pelo menos 6 caracteres.");
+    }
+    if (secret !== secret2) return setErrorMsg(isIdoso ? "Os PINs não conferem." : "As senhas não conferem.");
+    const birthIso = birth ? toIso(birth) : null;
+    if (birth && !birthIso) return setErrorMsg("Data de nascimento inválida (use DD/MM/AAAA).");
+    if (!accepted) return setErrorMsg("É necessário aceitar os Termos de Uso.");
 
-    if (birthDate && !/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
-      setErrorMsg("Data inválida")
-      setLoading(false)
-      return
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password: isIdoso ? pinToPassword(secret) : secret,
+      options: { data: { full_name: fullName.trim(), role } },
+    });
+
+    if (error || !data.user) {
+      setLoading(false);
+      return setErrorMsg(error?.message ?? "Erro ao criar usuário.");
+    }
+    if (!data.session) {
+      // projeto com confirmação de e-mail ligada
+      setLoading(false);
+      notify("Conta criada!", "Confirme seu e-mail e depois faça login.");
+      return router.replace("/(auth)/login");
     }
 
-    if (!isValidNumber(height) || !isValidNumber(weight)) {
-      setErrorMsg("Altura e peso devem ser números")
-      setLoading(false)
-      return
-    }
+    const { error: profileError } = await supabase.from("profiles").update({
+      birth_date: birthIso,
+      phone: phone.trim() || null,
+      ...(isIdoso && {
+        emergency_name: emName.trim() || null,
+        emergency_phone: emPhone.trim() || null,
+        emergency_email: emEmail.trim() || null,
+      }),
+    }).eq("id", data.user.id);
+    setLoading(false);
+    if (profileError) console.warn("perfil:", profileError.message);
 
-    // 1. Cria o usuário
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (authError) {
-      setErrorMsg(authError.message)
-      setLoading(false)
-      return
-    }
-
-    if (!authData.user) {
-      setErrorMsg("Erro ao criar usuário.")
-      setLoading(false)
-      return
-    }
-
-    // login automático
-    const { error: loginError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (loginError) {
-      setErrorMsg("Conta criada! Verifique seu e-mail e faça login.")
-      setLoading(false)
-      router.replace("/login")
-      return
-    }
-
-    // atualiza perfil
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .update({
-        full_name: fullName || null,
-        birth_date: birthDate || null,
-        sex: sex || null,
-        height_cm: height ? parseFloat(height) : null,
-        weight_kg: weight ? parseFloat(weight) : null,
-        activity_level: activityLevel || null,
-        aceitou_uso_ia: aceitouIA,
-        aceitou_termos: aceitouTermos,
-      })
-      .eq("id", authData.user.id)
-
-    setLoading(false)
-
-    if (profileError) {
-      console.error("Erro ao atualizar perfil:", profileError)
-      setErrorMsg("Conta criada, mas erro ao salvar dados.")
-    }
-
-    router.replace("/(tabs)")
+    router.replace("/");
   }
 
   return (
-<ScrollView
-  contentContainerStyle={{
-    marginTop:60,
-    padding: 40,
-    gap: 20,
-  }}
->
-      {/* -------- Nome -------- */}
-      <Text style={styles.label}>Nome completo</Text>
-      <TextInput style={styles.input} value={fullName} onChangeText={setFullName} placeholder="Opcional" />
+    <ScrollView contentContainerStyle={{ padding: 28, backgroundColor: "white", paddingTop: 56 }}>
+      <View style={{ width: "100%", maxWidth: 480, alignSelf: "center", gap: 6 }}>
+        <Text style={[s.h2, { fontSize: 26, textAlign: "center", marginBottom: 12 }]}>Criar conta</Text>
 
-      {/* -------- Email -------- */}
-      <Text style={styles.label}>Email</Text>
-      <TextInput style={styles.input} keyboardType="email-address" value={email} onChangeText={setEmail} />
+        <Text style={s.label}>Quem vai usar?</Text>
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {(["idoso", "familiar"] as const).map((r) => (
+            <Pressable key={r} onPress={() => { setRole(r); setSecret(""); setSecret2(""); }}
+              style={[s.chip, { flex: 1, alignItems: "center", paddingVertical: 14 }, role === r && s.chipActive]}>
+              <Text style={{ color: role === r ? "#fff" : "#333", fontWeight: "700", fontSize: 16 }}>
+                {r === "idoso" ? "Eu sou o paciente" : "Sou familiar / cuidador"}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
 
-      {/* -------- Senha -------- */}
-      <Text style={styles.label}>Senha</Text>
-      <TextInput style={styles.input} value={password} onChangeText={setPassword} secureTextEntry />
+        <Text style={s.label}>Nome completo</Text>
+        <TextInput style={s.input} value={fullName} onChangeText={setFullName} />
 
-      {/* -------- Data -------- */}
+        <Text style={s.label}>E-mail</Text>
+        <TextInput style={s.input} keyboardType="email-address" autoCapitalize="none" value={email} onChangeText={setEmail} />
 
-<Text style={styles.label}>Data de nascimento</Text>
+        <Text style={s.label}>{isIdoso ? "Crie um PIN de 4 números" : "Senha (mín. 6 caracteres)"}</Text>
+        <TextInput
+          style={[s.input, isIdoso && { fontSize: 28, letterSpacing: 14, textAlign: "center" }]}
+          value={secret} secureTextEntry
+          keyboardType={isIdoso ? "number-pad" : "default"}
+          maxLength={isIdoso ? 4 : undefined}
+          onChangeText={(t) => setSecret(isIdoso ? t.replace(/\D/g, "") : t)}
+        />
+        <Text style={s.label}>{isIdoso ? "Repita o PIN" : "Repita a senha"}</Text>
+        <TextInput
+          style={[s.input, isIdoso && { fontSize: 28, letterSpacing: 14, textAlign: "center" }]}
+          value={secret2} secureTextEntry
+          keyboardType={isIdoso ? "number-pad" : "default"}
+          maxLength={isIdoso ? 4 : undefined}
+          onChangeText={(t) => setSecret2(isIdoso ? t.replace(/\D/g, "") : t)}
+        />
 
-<TouchableOpacity
-  onPress={() => {
-    const start = birthDate ? new Date(birthDate) : new Date(2000, 0, 1)
-    setTempDate(start)
-    setShowDatePicker(true)
-  }}
->
-  <View style={[styles.input, { justifyContent: "center" }]}>
-    <Text style={{ color: birthDate ? "#000" : "#777" }}>
-      {birthDate || "Selecione uma data"}
-    </Text>
-  </View>
-</TouchableOpacity>
+        {isIdoso && (
+          <>
+            <Text style={s.label}>Data de nascimento</Text>
+            <TextInput style={s.input} value={birth} onChangeText={(t) => setBirth(maskDate(t))} keyboardType="number-pad" placeholder="DD/MM/AAAA" maxLength={10} />
 
-{/* -------- ANDROID -------- */}
-{showDatePicker && Platform.OS === "android" && (
-  <DateTimePicker
-    mode="date"
-    value={birthDate ? new Date(birthDate) : new Date(2000, 0, 1)}
-    display="calendar"
-    onChange={(event, date) => {
-      if (event.type === "dismissed") {
-        setShowDatePicker(false)
-        return
-      }
-      if (date) {
-        const yyyy = date.getFullYear()
-        const mm = String(date.getMonth() + 1).padStart(2, "0")
-        const dd = String(date.getDate()).padStart(2, "0")
-        setBirthDate(`${yyyy}-${mm}-${dd}`)
-      }
-      setShowDatePicker(false)
-    }}
-  />
-)}
+            <Text style={[s.h2, { marginTop: 18 }]}>Contato de emergência</Text>
+            <Text style={s.muted}>Você pode preencher depois, no seu perfil.</Text>
+            <Text style={s.label}>Nome do familiar</Text>
+            <TextInput style={s.input} value={emName} onChangeText={setEmName} />
+            <Text style={s.label}>Telefone</Text>
+            <TextInput style={s.input} value={emPhone} onChangeText={setEmPhone} keyboardType="phone-pad" />
+            <Text style={s.label}>E-mail</Text>
+            <TextInput style={s.input} value={emEmail} onChangeText={setEmEmail} keyboardType="email-address" autoCapitalize="none" />
+          </>
+        )}
+        {!isIdoso && (
+          <>
+            <Text style={s.label}>Telefone (para receber alertas)</Text>
+            <TextInput style={s.input} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          </>
+        )}
 
-{/* -------- iOS -------- */}
-<Modal
-  visible={showDatePicker && Platform.OS === "ios"}
-  transparent
-  animationType="fade"
->
-  <View
-    style={{
-      flex: 1,
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "rgba(0,0,0,0.4)",
-      padding: 20,
-    }}
-  >
-    <View
-      style={{
-        backgroundColor: "white",
-        padding: 20,
-        borderRadius: 12,
-        width: "85%",
-      }}
-    >
-      <DateTimePicker
-        mode="date"
-        display="spinner"
-        value={tempDate}
-        onChange={(event, date) => {
-          if (date) {
-            setTempDate(date)
-          }
-        }}
-        themeVariant="light" 
-      />
+        <View style={[s.rowBetween, { marginTop: 18 }]}>
+          <Text style={{ flex: 1, fontSize: 15 }}>
+            Li e aceito os{" "}
+            <Text onPress={() => setShowTerms(true)} style={{ color: "#1FB9C9", fontWeight: "700" }}>Termos de Uso</Text>
+          </Text>
+          <Switch value={accepted} onValueChange={setAccepted} />
+        </View>
 
-      <TouchableOpacity
-        onPress={() => {
-          const yyyy = tempDate.getFullYear()
-          const mm = String(tempDate.getMonth() + 1).padStart(2, "0")
-          const dd = String(tempDate.getDate()).padStart(2, "0")
-          setBirthDate(`${yyyy}-${mm}-${dd}`)
-          setShowDatePicker(false)
-        }}
-        style={{
-          backgroundColor: "#1FB9C9",
-          padding: 12,
-          borderRadius: 8,
-          marginTop: 10,
-          alignItems: "center",
-        }}
-      >
-        <Text style={{ color: "white", fontSize: 16 }}>OK</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+        {errorMsg !== "" && <Text style={{ color: "#D63031", fontSize: 16 }}>{errorMsg}</Text>}
 
-
-
-
-      {/* -------- Sexo (chips) -------- */}
-      <Text style={styles.label}>Sexo</Text>
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 12 }}>
-        {["Masculino", "Feminino"].map((item) => (
-          <TouchableOpacity
-            key={item}
-            onPress={() => setSex(item)}
-            style={{
-              paddingVertical: 10,
-              paddingHorizontal: 14,
-              borderRadius: 6,
-              backgroundColor: sex === item ? "#1FB9C9" : "#E9E9E9",
-            }}
-          >
-            <Text style={{ color: sex === item ? "white" : "#333" }}>
-              {item}
-            </Text>
-          </TouchableOpacity>
-        ))}
+        <Pressable style={[s.button, { marginTop: 14, paddingVertical: 18 }]} disabled={loading} onPress={handleRegister}>
+          <Text style={s.buttonText}>{loading ? "Criando..." : "Criar conta"}</Text>
+        </Pressable>
+        <Pressable onPress={() => router.replace("/(auth)/login")}>
+          <Text style={{ color: "#1FB9C9", textAlign: "center", marginTop: 14, fontSize: 16 }}>Já tenho conta</Text>
+        </Pressable>
       </View>
-
-      {/* -------- Altura -------- */}
-      <Text style={styles.label}>Altura (cm)</Text>
-      <TextInput
-        style={styles.input}
-        value={height}
-        onChangeText={setHeight}
-        keyboardType="numeric"
-        placeholder="Opcional"
-      />
-
-      {/* -------- Peso -------- */}
-      <Text style={styles.label}>Peso (kg)</Text>
-      <TextInput
-        style={styles.input}
-        value={weight}
-        onChangeText={setWeight}
-        keyboardType="numeric"
-        placeholder="Opcional"
-      />
-
-      {/* -------- Nível de atividade (chips) -------- */}
-      <Text style={styles.label}>Nível de atividade</Text>
-      <View style={{ flexDirection: "row", gap: 10, marginBottom: 12}}>
-        {[
-          { label: "Sedentário", value: "Sedentário" },
-          { label: "Leve", value: "Leve" },
-          { label: "Moderado", value: "Moderado" },
-                    { label: "Intenso", value: "Intenso" },
-
-        ].map(({ label, value }) => (
-          <TouchableOpacity
-            key={value}
-            onPress={() => setActivityLevel(value)}
-            style={{
-              paddingVertical: 10,
-              paddingHorizontal: 8,
-              borderRadius: 6,
-              backgroundColor: activityLevel === value ? "#1FB9C9" : "#E9E9E9",
-            }}
-          >
-            <Text style={{ color: activityLevel === value ? "white" : "#333" }}>
-              {label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* -------- Switches -------- */}
-      <View style={styles.switchRow}>
-        <Text>Aceitou uso de IA</Text>
-        <Switch value={aceitouIA} onValueChange={setAceitouIA} />
-      </View>
-
-      <View style={styles.switchRow}>
-        <Text>Aceitou termos</Text>
-        <Switch value={aceitouTermos} onValueChange={setAceitouTermos} />
-      </View>
-
-      {/* -------- Erros -------- */}
-      {errorMsg !== "" && (
-        <Text style={{ color: "red", marginVertical: 10 }}>{errorMsg}</Text>
-      )}
-
-      {/* -------- Botão -------- */}
-      <TouchableOpacity style={styles.button} disabled={loading} onPress={handleRegister}>
-        <Text style={styles.buttonText}>
-          {loading ? "Registrando..." : "Registrar"}
-        </Text>
-      </TouchableOpacity>
+      <TermosdeUso visible={showTerms} onClose={() => setShowTerms(false)} />
     </ScrollView>
-  )
+  );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "white", justifyContent: "center", paddingHorizontal: 30 },
-  logo: { width: 90, height: 90, alignSelf: "center", marginBottom: 40, marginTop: -60 },
-  label: { color: "#555", marginBottom: 6, fontSize: 15 },
-  input: { backgroundColor: "#E9E9E9", padding: 14, borderRadius: 6, fontSize: 16, marginBottom: 12 },
-  button: { backgroundColor: "#1FB9C9", padding: 16, borderRadius: 30, marginTop: 20, alignItems: "center",marginBottom:100 },
-  buttonText: { color: "white", fontSize: 18 },
-  switchRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginVertical: 10 },
-})

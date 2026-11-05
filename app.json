@@ -4,7 +4,7 @@
     "slug": "ProHealth",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/logolp.png",
     "scheme": "prohealth",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -14,9 +14,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/logo.png",
-        "backgroundImage": "./assets/images/logo.png",
-        "monochromeImage": "./assets/images/logo.png"
+        "foregroundImage": "./assets/images/logolp.png",
+        "backgroundImage": "./assets/images/logolp.png",
+        "monochromeImage": "./assets/images/logolp.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -24,8 +24,8 @@
       "googleServicesFile": "./google-services.json"
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/logo.png"
+      "output": "single",
+      "favicon": "./assets/images/logol.png"
     },
     "plugins": [
       "expo-router",
@@ -44,7 +44,8 @@
     ],
     "experiments": {
       "typedRoutes": true,
-      "reactCompiler": true
+      "reactCompiler": true,
+      "baseUrl": "/ProHealth"
     },
     "extra": {
       "router": {},
