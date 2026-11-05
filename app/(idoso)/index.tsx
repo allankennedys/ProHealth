@@ -8,7 +8,8 @@ import { s } from "@/lib/styles";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback } from "react";
-import { Linking, ScrollView, Text, View } from "react-native";
+import { callPhone } from "@/lib/ui";
+import { ScrollView, Text, View } from "react-native";
 
 function LastReading({ title, value, unit, when, status }: { title: string; value: string; unit: string; when?: string; status?: Status }) {
   return (
@@ -57,7 +58,7 @@ export default function IdosoHome() {
 
         {profile?.emergency_phone ? (
           <BigButton icon="phone" size="md" label={`Ligar para ${profile.emergency_name || "familiar"}`} bg="#444"
-            onPress={() => Linking.openURL(`tel:${profile.emergency_phone!.replace(/[^\d+]/g, "")}`)} />
+            onPress={() => callPhone(profile.emergency_phone!, profile.emergency_name)} />
         ) : null}
       </View>
     </ScrollView>

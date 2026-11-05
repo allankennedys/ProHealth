@@ -239,3 +239,10 @@ begin
     begin alter publication supabase_realtime add table public.alertas; exception when duplicate_object then null; end;
   end if;
 end $$;
+
+------------------------------------------------------------------
+-- 8. Excluir conta não pode ser bloqueada por remédios cadastrados
+------------------------------------------------------------------
+alter table public.medicamentos drop constraint if exists medicamentos_usuario_fkey;
+alter table public.medicamentos
+  add constraint medicamentos_usuario_fkey foreign key (usuario) references auth.users (id) on delete cascade;

@@ -1,10 +1,10 @@
 // app/privacy.tsx
+import { notify } from "@/lib/ui";
 import { supabase } from "@/supabase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   StyleSheet,
   Switch,
   Text,
@@ -43,7 +43,7 @@ export default function PrivacyModal() {
         setUsoIA(profile?.aceitou_uso_ia ?? true);
       } catch (err: any) {
         console.error("Erro ao carregar privacidade:", err);
-        Alert.alert("Erro", "Não foi possível carregar suas preferências.");
+        notify("Erro", "Não foi possível carregar suas preferências.");
       } finally {
         setLoading(false);
       }
@@ -72,14 +72,14 @@ export default function PrivacyModal() {
       .eq("id", user.id);
 
     if (error) {
-      Alert.alert("Erro", "Não foi possível salvar sua preferência.");
+      notify("Erro", "Não foi possível salvar sua preferência.");
       setUpdating(false);
       return;
     }
 
     setUsoIA(novoValor);
     setUpdating(false);
-    Alert.alert(
+    notify(
       "Sucesso",
       `Relatórios com IA ${novoValor ? "ativados" : "desativados"}.`
     );

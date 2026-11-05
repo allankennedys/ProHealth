@@ -46,9 +46,14 @@ export default function ReminderWatcher() {
     requestWebNotificationPermission();
     const tick = () => {
       const now = new Date();
-      const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       const day = now.toDateString();
-      const due = reminders.find((r) => r.time === hhmm && !firedRef.current.has(`${day}:${r.key}`));
+      const nowMin = now.getHours() * 60 + now.getMinutes();
+      // janela de 3 min: navegadores atrasam timers de abas em segundo plano
+      const due = reminders.find((r) => {
+        const [h, m] = r.time.split(":").map(Number);
+        const diff = nowMin - (h * 60 + m);
+        return diff >= 0 && diff <= 2 && !firedRef.current.has(`${day}:${r.key}`);
+      });
       if (due) {
         firedRef.current.add(`${day}:${due.key}`);
         setActive(due);

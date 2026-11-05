@@ -1,4 +1,4 @@
-import { Alert, Platform } from "react-native";
+import { Alert, Linking, Platform } from "react-native";
 
 /** Alert.alert não funciona no web; estes helpers funcionam nas duas plataformas. */
 export function notify(title: string, message?: string) {
@@ -29,3 +29,23 @@ export const COLORS = {
   muted: "#666",
   card: "#fff",
 };
+
+/** Liga para um número. Celular (nativo ou navegador móvel): abre o discador. Computador: copia o número e avisa. */
+export async function callPhone(raw: string, name?: string | null) {
+  const number = raw.replace(/[^\d+]/g, "");
+  if (!number) return notify("Telefone inválido", "Este contato não tem um número válido.");
+  if (Platform.OS === "web") {
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (!isMobile) {
+      try { await navigator.clipboard?.writeText(number); } catch {}
+      return notify(`Ligar para ${name || "contato"}`, `Este aparelho não faz ligações. Número copiado: ${raw}\n\nLigue pelo celular.`);
+    }
+    window.location.href = `tel:${number}`;
+    return;
+  }
+  try {
+    await Linking.openURL(`tel:${number}`);
+  } catch {
+    notify("Não foi possível ligar", `Ligue manualmente para ${raw}.`);
+  }
+}

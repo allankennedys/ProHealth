@@ -10,7 +10,8 @@ import { supabase } from "@/supabase";
 import { LinearGradient } from "expo-linear-gradient";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { callPhone } from "@/lib/ui";
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
 
 type Alerta = { id: string; tipo: string; mensagem: string; lido: boolean; created_at: string };
 
@@ -113,7 +114,7 @@ export default function Painel() {
             </View>
 
             {patient.emergency_phone ? (
-              <Pressable style={s.buttonGhost} onPress={() => Linking.openURL(`tel:${patient.emergency_phone!.replace(/[^\d+]/g, "")}`)}>
+              <Pressable style={s.buttonGhost} onPress={() => callPhone(patient.emergency_phone!, patient.emergency_name)}>
                 <Text style={s.buttonGhostText}>Ligar: {patient.emergency_name ?? patient.emergency_phone}</Text>
               </Pressable>
             ) : null}
