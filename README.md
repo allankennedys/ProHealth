@@ -1,96 +1,56 @@
 # ProHealth
 
-ProHealth é um aplicativo de gerenciamento de saúde pessoal que ajuda o usuário a registrar e monitorar dados de saúde, cadastrar medicamentos, definir lembretes e receber notificações para não esquecer de tomá-los.
+App para acompanhar a saúde de pessoas idosas e deixar a família por perto. O idoso registra glicemia e pressão e é lembrado dos remédios. Quem cuida acompanha tudo de longe e é avisado quando algum valor sai do normal.
 
----
+Versão web: https://allankennedys.github.io/ProHealth/
 
-## Tecnologias
+## Como funciona
 
-* **Frontend:** React Native + Expo
-* **Backend:** Supabase (PostgreSQL, Auth, Edge Functions)
-* **Notificações:** Expo Push Notifications
-* **Hospedagem do Backend:** Supabase Edge Functions
-* **Relatórios** Gerados por AI Agent via n8n
+Existem dois tipos de conta.
 
----
+**Paciente (idoso)**
+- Telas com botões grandes e letras grandes, pensadas para ser fáceis de usar.
+- Entra só com e-mail e um PIN de 4 números.
+- Registra glicemia (em jejum, depois de comer ou antes de dormir) e pressão arterial.
+- Vê o histórico e gráficos dos últimos 30 dias, com cores indicando se está normal, em atenção ou fora da faixa.
+- Cadastra os remédios e os horários. O app avisa com som e mensagem na tela.
+- Tem um botão para ligar para o contato de emergência.
+- Tem um código de 6 letras que serve para a família se vincular à conta.
 
-## Funcionalidades
+**Familiar / cuidador**
+- Digita o código do paciente para acompanhá-lo. Dá para acompanhar mais de um.
+- Vê no painel as últimas medições, os gráficos e os alertas, tudo atualizado na hora.
+- Define os limites aceitáveis de glicemia e pressão (as metas passadas pelo médico).
+- Cadastra e ajusta os remédios do paciente.
+- Gera um relatório em PDF para levar à consulta.
 
-* Cadastro de medicamentos com nome, dosagem e horário.
-* Lembretes automáticos baseados em horário.
-* Notificações push em Android e iOS.
-* Histórico de notificações enviadas.
-* Relatórios diários gerados por IA a partir dos dados inseridos pelo usuário.
+**Alertas:** quando uma medição fica fora dos limites, o familiar é avisado. O app também avisa quando o paciente esquece de medir. O envio por SMS ainda não foi configurado.
 
----
+## Celular e navegador
 
-## Pré-requisitos
+- No celular (Android e iOS) os lembretes tocam mesmo com o app fechado.
+- No navegador os lembretes só tocam com a aba aberta.
+- O botão de ligar funciona no celular. No computador ele copia o número.
 
-* Node.js >= 20
-* Expo CLI
-* Conta no Supabase
-* Conta no Firebase (para push notifications Android)
+## Rodando o projeto
 
----
-
-## Configuração do Projeto
-
-1. Clone o repositório:
-
-```bash
-git clone git@github.com:allankennedys/ProHealth.git
-cd prohealth
-```
-
-2. Instale dependências:
+Precisa do Node 20 ou mais novo.
 
 ```bash
 npm install
-# ou
-yarn install
+npx expo start
 ```
 
-3. Crie um arquivo `.env` na raiz com as variáveis do Supabase:
+Aperte `w` para abrir no navegador, ou leia o QR code com o app Expo Go no celular.
 
-```
-SUPABASE_URL=<sua_url_supabase>
-SUPABASE_ANON_KEY=<sua_anon_key>
-SUPABASE_SERVICE_ROLE_KEY=<sua_service_role_key>
-```
-
-## Rodando localmente
+Para gerar a versão web:
 
 ```bash
-expo start
+npx expo export --platform web
 ```
 
-* Para testes Android/iOS com push notifications, use o Expo Go.
+A cada alteração enviada para a branch `main`, o site é atualizado sozinho pelo GitHub.
 
----
+## Servidor
 
-## Build para produção
-
-```bash
-eas build -p android --profile production
-eas build -p ios --profile production
-```
-
-
-## Estrutura do Banco de Dados
-
-* **profiles**: informações do usuário + `expo_push_token`.
-* **medicamentos**: lista de medicamentos por usuário.
-* **lembretes**: horários dos medicamentos.
-* **notificacoes_enviadas**: histórico de notificações enviadas.
-
----
-
-## Observações
-
-* Notificações são enviadas via Supabase Edge Function que consulta os lembretes no horário exato.
-
----
-
-## Contato
-
-Desenvolvedores: Allan Kennedy, Felipe Santos, Lucas Câmera, Kiria Velsoso
+Os dados ficam no Supabase. A pasta `supabase/` tem a estrutura do banco e a função que confere as medições atrasadas. O passo a passo está em `supabase/README.md`.
